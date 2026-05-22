@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <title>Bait-ul-Zikr — Jamaat Trefles</title>
+  <meta name="description" content="Namaz times for Bait-ul-Zikr Mosque, Jamaat Trefles, Quatre Bornes">
+  <meta name="theme-color" content="#064a35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --emerald: #0d6b4e;
+      --emerald-dark: #064a35;
+      --emerald-deep: #032b1f;
+      --gold: #c8a84e;
+      --gold-light: #f5edda;
+      --sand: #faf7f2;
+      --sand-dark: #f0ebe3;
+      --ink: #1a1a2e;
+      --ink-soft: #5a5a6a;
+      --white: #ffffff;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--sand);
+      color: var(--ink);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle geometric grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.025;
+      background-image:
+        repeating-linear-gradient(0deg, var(--emerald) 0px, transparent 1px, transparent 44px),
+        repeating-linear-gradient(90deg, var(--emerald) 0px, transparent 1px, transparent 44px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 280px;
+      height: 100dvh;
+      background: var(--emerald-deep);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 30px rgba(0,0,0,0.3);
+      transform: translateX(-100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-header {
+      padding: 32px 24px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-header h2 {
+      font-family: 'Amiri', serif;
+      color: var(--gold);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .sidebar-header p {
+      color: rgba(255,255,255,0.45);
+      font-size: 0.76rem;
+      margin-top: 5px;
+      font-weight: 300;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav { padding: 18px 14px; flex: 1; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item:active { background: rgba(255,255,255,0.08); }
+    .nav-item.active {
+      background: rgba(200,168,78,0.12);
+      color: var(--gold);
+      font-weight: 500;
+    }
+    .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; opacity: 0.65; }
+    .nav-item.active svg { opacity: 1; }
+    .nav-item.disabled { opacity: 0.28; pointer-events: none; }
+    .nav-badge {
+      margin-left: auto;
+      font-size: 0.6rem;
+      background: rgba(255,255,255,0.08);
+      padding: 2px 8px;
+      border-radius: 20px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-footer {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.2);
+      font-size: 0.68rem;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 999;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .overlay.show { display: block; }
+
+    /* ═══ TOP BAR ═══ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: rgba(250,247,242,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .menu-btn:active { background: rgba(0,0,0,0.06); }
+    .menu-btn svg { width: 22px; height: 22px; color: var(--ink); }
+
+    .topbar-title {
+      font-family: 'Amiri', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--emerald-dark);
+    }
+    .topbar-spacer { width: 38px; }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 18px 16px 40px;
+    }
+
+    /* ═══ MOSQUE CARD ═══ */
+    .mosque-card {
+      background: linear-gradient(150deg, var(--emerald-dark) 0%, var(--emerald-deep) 100%);
+      border-radius: var(--radius);
+      padding: 26px 22px;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 22px;
+      animation: fadeUp 0.5s ease-out;
+    }
+    .mosque-card::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -25px;
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: rgba(200,168,78,0.07);
+    }
+    .mosque-card::after {
+      content: '';
+      position: absolute;
+      bottom: -35px; left: -15px;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: rgba(200,168,78,0.04);
+    }
+
+    .mosque-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 1.5rem;
+      color: var(--gold);
+      margin-bottom: 5px;
+      line-height: 1.25;
+    }
+    .mosque-name {
+      font-size: 1.08rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+      position: relative;
+    }
+    .mosque-jamaat {
+      font-size: 0.74rem;
+      font-weight: 300;
+      opacity: 0.6;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .mosque-date {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      position: relative;
+    }
+    .mosque-date-text {
+      font-size: 0.8rem;
+      font-weight: 400;
+      opacity: 0.7;
+    }
+    .mosque-date-badge {
+      font-size: 0.68rem;
+      font-weight: 500;
+      background: rgba(200,168,78,0.15);
+      color: var(--gold);
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+
+    /* ═══ SECTION LABEL ═══ */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 0 2px;
+    }
+    .section-label span {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(0,0,0,0.06);
+    }
+
+    /* ═══ PRAYER ROWS ═══ */
+    .prayer-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .prayer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--white);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(0,0,0,0.04);
+      animation: fadeUp 0.5s ease-out both;
+    }
+    .prayer-row:nth-child(1) { animation-delay: 0.06s; }
+    .prayer-row:nth-child(2) { animation-delay: 0.12s; }
+    .prayer-row:nth-child(3) { animation-delay: 0.18s; }
+    .prayer-row:nth-child(4) { animation-delay: 0.24s; }
+    .prayer-row:nth-child(5) { animation-delay: 0.30s; }
+
+    .prayer-row.next-prayer {
+      background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+      color: var(--white);
+      border-color: transparent;
+      box-shadow: 0 4px 22px rgba(13,107,78,0.22);
+      transform: scale(1.015);
+    }
+
+    .prayer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .prayer-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      background: rgba(13,107,78,0.06);
+      flex-shrink: 0;
+    }
+    .prayer-row.next-prayer .prayer-icon {
+      background: rgba(255,255,255,0.14);
+    }
+
+    .prayer-name {
+      font-weight: 500;
+      font-size: 0.94rem;
+    }
+    .prayer-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 0.74rem;
+      opacity: 0.4;
+      margin-top: 1px;
+    }
+    .prayer-row.next-prayer .prayer-arabic { opacity: 0.6; }
+
+    .prayer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .prayer-time {
+      font-weight: 600;
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .next-badge {
+      display: none;
+      font-size: 0.52rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      background: rgba(255,255,255,0.18);
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+    .prayer-row.next-prayer .next-badge { display: inline-block; }
+
+    /* ═══ STATES ═══ */
+    .loading-state {
+      text-align: center;
+      padding: 55px 20px;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      background: var(--emerald);
+      border-radius: 50%;
+      margin: 0 4px;
+      animation: bounce 0.6s infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    .loading-text {
+      margin-top: 14px;
+      font-size: 0.84rem;
+      color: var(--ink-soft);
+      font-weight: 300;
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #b33a3a;
+      font-size: 0.88rem;
+    }
+    .error-state p { margin-top: 8px; opacity: 0.65; font-size: 0.8rem; }
+
+    /* ═══ ANIMATIONS ═══ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      to { transform: translateY(-8px); }
+    }
+
+    /* ═══ LARGER SCREENS ═══ */
+    @media (min-width: 500px) {
+      .main { padding: 28px 24px 60px; }
+      .mosque-card { padding: 32px 28px; }
+      .prayer-row { padding: 18px 22px; }
+      .prayer-icon { width: 42px; height: 42px; }
+      .prayer-time { font-size: 1.15rem; }
+      .prayer-name { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>بيت الذكر</h2>
+      <p>Bait-ul-Zikr Mosque</p>
+    </div>
+    <div class="sidebar-nav">
+      <a class="nav-item active" onclick="toggleMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Namaz Time
+      </a>
+      <a class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Events
+        <span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Announcements
+        <span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        Contact
+        <span class="nav-badge">Soon</span>
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      Jamaat Trefles &middot; Quatre Bornes
+    </div>
+  </nav>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <span class="topbar-title">Bait-ul-Zikr</span>
+    <div class="topbar-spacer"></div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+
+    <div class="mosque-card">
+      <div class="mosque-arabic">بيت الذكر</div>
+      <div class="mosque-name">Bait-ul-Zikr Mosque</div>
+      <div class="mosque-jamaat">Jamaat Trefles &middot; Quatre Bornes</div>
+      <div class="mosque-date">
+        <span class="mosque-date-text" id="displayDate">Loading…</span>
+        <span class="mosque-date-badge" id="dayBadge">—</span>
+      </div>
+    </div>
+
+    <div class="section-label"><span>Namaz Times</span></div>
+
+    <div class="prayer-grid" id="prayerGrid">
+      <div class="loading-state">
+        <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="loading-text">Fetching namaz times…</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ══════════════════════════════════════
+    // CONFIGURATION
+    // Replace this with your deployed Apps Script URL
+    // ══════════════════════════════════════
+    var API_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+    // Example: 'https://script.google.com/macros/s/AKfycbx.../exec'
+
+    // ── Sidebar ──
+    function toggleMenu() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+    }
+
+    // ── Prayer metadata ──
+    var prayerMeta = {
+      'fajr':    { icon: '🌙', arabic: 'الفجر' },
+      'zohar':   { icon: '☀️', arabic: 'الظهر' },
+      'asr':     { icon: '🌤️', arabic: 'العصر' },
+      'maghrib': { icon: '🌇', arabic: 'المغرب' },
+      'esha':    { icon: '🌜', arabic: 'العشاء' }
+    };
+
+    // ── Next prayer logic ──
+    function getNextPrayer(prayers, currentTime) {
+      function toMinutes(t) {
+        t = String(t).trim();
+        var match12 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (match12) {
+          var h = parseInt(match12[1]);
+          var m = parseInt(match12[2]);
+          var ap = match12[3].toUpperCase();
+          if (ap === 'PM' && h !== 12) h += 12;
+          if (ap === 'AM' && h === 12) h = 0;
+          return h * 60 + m;
+        }
+        var parts = t.split(':');
+        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      }
+
+      var nowMin = toMinutes(currentTime);
+      for (var i = 0; i < prayers.length; i++) {
+        if (toMinutes(prayers[i].time) > nowMin) return i;
+      }
+      return 0;
+    }
+
+    // ── Render UI ──
+    function render(data) {
+      if (data.error) {
+        document.getElementById('prayerGrid').innerHTML =
+          '<div class="error-state">⚠<p>' + data.error + '</p></div>';
+        return;
+      }
+
+      document.getElementById('displayDate').textContent = data.date;
+      document.getElementById('dayBadge').textContent = data.day;
+
+      var nextIdx = getNextPrayer(data.prayers, data.currentTime);
+      var html = '';
+
+      for (var i = 0; i < data.prayers.length; i++) {
+        var p = data.prayers[i];
+        var key = p.name.toLowerCase();
+        var meta = prayerMeta[key] || { icon: '🕌', arabic: '' };
+        var isNext = (i === nextIdx);
+
+        // 24h → 12h conversion
+        var parts = p.time.split(':');
+        var h = parseInt(parts[0]);
+        var m = parts[1];
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        var h12 = h % 12 || 12;
+        var displayTime = h12 + ':' + m + ' ' + ampm;
+
+        html += '<div class="prayer-row' + (isNext ? ' next-prayer' : '') + '">'
+          + '<div class="prayer-left">'
+          + '<div class="prayer-icon">' + meta.icon + '</div>'
+          + '<div>'
+          + '<div class="prayer-name">' + p.name + '</div>'
+          + '<div class="prayer-arabic">' + meta.arabic + '</div>'
+          + '</div></div>'
+          + '<div class="prayer-right">'
+          + '<span class="prayer-time">' + displayTime + '</span>'
+          + '<span class="next-badge">NEXT</span>'
+          + '</div></div>';
+      }
+
+      document.getElementById('prayerGrid').innerHTML = html;
+    }
+
+    // ── Fetch from Apps Script API ──
+    fetch(API_URL)
+      .then(function(res) { return res.json(); })
+      .then(render)
+      .catch(function(err) {
+        document.getElementById('prayerGrid').innerHTML =
+          '<div class="error-state">⚠<p>Could not load namaz times. Please check your connection.</p></div>';
+      });
+  </script>
+</body>
+</html>
